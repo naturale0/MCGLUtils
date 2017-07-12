@@ -1,0 +1,110 @@
+#!/usr/local/bin/python
+import argparse
+import os
+import numpy as np
+import scipy as sp
+import scipy.optimize
+import matplotlib.pyplot as plt
+import argparse
+
+# python, scipy, matplotlib should be installed
+
+# input file should contain two column (x, y)
+#  * input file: All .txt files in the directory
+#  * output: 1) .png file with fitted curve and IC50 value
+#            2) .tsv file of fitted curve coordinates
+
+
+parser = argparse.ArgumentParser(description='Calculate IC50 from multiple input text files. Input files should contain two column (x, y), separated by tab(\\t). Contact Sihyung Park for details',
+                                 prog="./calc_ic50")
+parser.add_argument('input_directory', type=str, nargs=1,
+                    help='directory of text files to calculate IC50')
+
+input_dir = parser.parse_args().input_directory[0]
+
+def findNearest(array, value):
+    return abs(np.asarray(array)-value).argmin()
+
+def sigmoid(x, pEC50, k, base, amp):
+    """https://en.wikipedia.org/wiki/EC50#Equation"""
+    return amp / (1 + 10**((x-pEC50)*k)) + base
+
+def refine_plot(ax=None):
+    if ax is None: ax = plt.gca()
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+
+def save_this(filename):
+    plt.savefig(filename, transparent=True, bbox_inches='tight')
+
+def objective_IC50(x, popt):
+    pEC50, k, base, amp = popt
+    fitted = sigmoid(x, *popt)
+    b = (ymin + ymax)/2.
+    return np.append(fitted[fitted - b >= 0],
+                     -fitted[fitted - b <= 0] + (2 * b))
+
+files = os.listdir(input_dir)
+files = [os.path.join(input_dir, i) for i in files if i.endswith(".txt")]
+for in_in in files:
+    r = open(in_in,'r')
+    l = r.readline()
+    xss = []
+    yss = []
+    while l:
+        temp = l[:-1].split()
+        if temp[0] == '0':
+            xss.append(-3)
+        else:
+            xss.append(np.log10(float(temp[0])))
+        yss.append(float(temp[1]))
+        l = r.readline()
+
+    xs = xss
+    ys = yss
+
+    #print "guessing parameters ..."
+    xmin = min(xs)
+    xmax = max(xs)
+    ymin = min(ys)
+    ymax = max(ys)
+    y50 = (ymax - ymin) / 2 #+ ymin
+    idx = findNearest(ys, y50)
+    pEC50 = xs[idx]
+    k = 1
+    baseline = ymin
+    amplitude = ymax - ymin
+
+    guess = [pEC50, k, baseline, amplitude]
+    print "-" * 60
+    print "filename: ", in_in
+    print "starting parameters: ", guess
+
+    fitfunc = sigmoid
+    popt, pcov = sp.optimize.curve_fit(fitfunc, xs, ys, p0=guess, maxfev=30000)
+    print "fitted parameters: ", popt
+
+    x = np.linspace(min(xs), max(xs), 100)
+    pIC50 = x[np.argmin(objective_IC50(x, popt))]
+    EC50 = 10**(pEC50)
+    print "EC50: ", EC50
+    print "IC50: ", 10**pIC50
+
+    plt.figure()
+    plt.plot(xs, ys, 'x', label='raw')
+    #plt.plot(x, fitfunc(x, *guess), label='guess')
+    plt.plot(x, fitfunc(x, *popt), color="b", label='fit')
+    plt.axvline(pIC50, color="gray", linestyle="--", label="pIC50")
+    plt.axhline(fitfunc(pIC50, *popt), color="gray", linestyle="--")
+    plt.annotate("IC50 = {}".format(round(10**pIC50,4)),
+                 xy=(pIC50+0.05, fitfunc(pIC50, *popt)), ha="left", va="bottom")
+    #plt.legend()
+    plt.ylim(ymin, ymax)
+    refine_plot()
+
+    save_this(in_in+".png")
+    with open(in_in+"_output.tsv", "w") as w:
+        w.write("X\tY\tIC50:{}\n".format(10**pIC50))
+        np.savetxt(w, np.c_[x, fitfunc(x, *popt)], delimiter="\t")

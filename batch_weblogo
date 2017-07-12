@@ -1,0 +1,53 @@
+#!/usr/local/bin/python
+
+import argparse
+import os
+import numpy as np
+
+parser = argparse.ArgumentParser(description='Batch process multiple fasta files into weblogo images. Contact Sihyung Park for details',
+                                 prog="./batch_weblogo")
+parser.add_argument('input_dir', metavar='input_dir', type=str, nargs=1,
+                    help='directory of fasta files to make .png')
+parser.add_argument('-p',
+                    action='store_true',
+                    help='use probability as Y axis, instead of bits')
+parser.add_argument('-c', metavar='colors',
+                    nargs='*', default=["#3fc000", "A", "#cc0000", "T", "#ffab00", "G", "#0076ff", "C"], #default="#e1390e AT #aacccb GC #babcbd N",
+                    help='pairs of color code and symbol. Ex) "#e1390e" ATGC "#babcbd" N')
+args = parser.parse_args()
+input_dir = args.input_dir[0]
+colors = args.c
+try:
+    prob = args.p
+except AttributeError:
+    prob = False
+
+
+def run_weblogo(fasta, prob=False, colors=["#e1390e", "AT", "#aacccb", "GC", "#babcbd", "N"]):
+    color_str = ""
+    if len(colors) >= 2:
+        for e, i in enumerate(colors):
+            if e % 2 == 0:
+                color_str += '--color "{}" '.format(i)
+            else:
+                color_str += '{} "{}" '.format(i, i)
+
+    weblogo_str_option = 'weblogo --format png {}'.format(color_str)
+    if prob:
+        weblogo_str_option += " --units probability"
+    output = os.path.splitext(fasta)[0]
+    if prob:
+        output += "_prob"
+    else:
+        output += "_bits"
+    output += ".png"
+    weblogo_str_io = "< {} > {}".format(fasta, output)
+    weblogo_str = weblogo_str_option + weblogo_str_io
+    os.system(weblogo_str)
+
+    return None
+
+files = os.listdir(input_dir)
+files = [os.path.join(input_dir, i) for i in files if i.endswith(".fa") or i.endswith(".fasta")]
+for fasta in files:
+    run_weblogo(fasta, prob, colors)
