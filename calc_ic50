@@ -4,6 +4,7 @@ import os
 import numpy as np
 import scipy as sp
 import scipy.optimize
+import matplotlib as mpl; mpl.use("Agg")
 import matplotlib.pyplot as plt
 import argparse
 
