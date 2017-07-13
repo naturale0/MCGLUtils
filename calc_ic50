@@ -15,7 +15,7 @@ import argparse
 #            2) .tsv file of fitted curve coordinates
 
 
-parser = argparse.ArgumentParser(description='Calculate IC50 from multiple input text files. Input files should contain two column (x, y), separated by tab(\\t). Contact Sihyung Park for details',
+parser = argparse.ArgumentParser(description='Calculate EC50, IC50 from multiple input text files. Input files should contain two column (x, y), separated by tab(\\t). Contact Sung Wook Chi, Sihyung Park for details',
                                  prog="./calc_ic50")
 parser.add_argument('input_directory', type=str, nargs=1,
                     help='directory of text files to calculate IC50')
