@@ -1,0 +1,20 @@
+#!/usr/local/bin/python
+import argparse
+import numpy as np
+import scipy as sp
+import scipy.stats
+
+#python program.py input1.txt input2.txt
+
+parser = argparse.ArgumentParser(description='Calculate Kolmogorov-Smirnov test statistic and p-value. Contact Sung Wook Chi, Eun Sol Cho, Sihyung Park for details',
+                                 prog="./ks_test")
+parser.add_argument('input1', type=open, nargs=1)
+parser.add_argument('input2', type=open, nargs=1,
+                    help='input files of samples to test')
+args = parser.parse_args()
+input1, input2 = [map(float, fhand.read().split()) for fhand in [args.input1[0], args.input2[0]]]
+
+ks_result = sp.stats.ks_2samp(input1, input2)
+print "  ------ 2-sample KS-test ------"
+print "  test statistic \t p-value"
+print " ", ks_result.statistic, "\t", ks_result.pvalue
