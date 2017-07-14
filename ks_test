@@ -4,7 +4,6 @@ import numpy as np
 import scipy as sp
 import scipy.stats
 
-#python program.py input1.txt input2.txt
 
 parser = argparse.ArgumentParser(description='Calculate Kolmogorov-Smirnov test statistic and p-value. Contact Sung Wook Chi, Eun Sol Cho, Sihyung Park for details',
                                  prog="./ks_test")
