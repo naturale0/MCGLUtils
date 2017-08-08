@@ -89,6 +89,7 @@ for in_in in files:
     x = np.linspace(min(xs), max(xs), 100)
     pIC50 = x[np.argmin(objective_IC50(x, popt))]
     EC50 = 10**(-pEC50)
+    IC50 = 10**(-pIC50)
     print "EC50: ", EC50
     print "IC50: ", 10**(-pIC50)
 
@@ -98,7 +99,7 @@ for in_in in files:
     plt.plot(x, fitfunc(x, *popt), color="b", label='fit')
     plt.axvline(pIC50, color="gray", linestyle="--", label="pIC50")
     plt.axhline(fitfunc(pIC50, *popt), color="gray", linestyle="--")
-    plt.annotate("IC50 = {}".format(round(10**pIC50,4)),
+    plt.annotate("IC50 = {}".format(round(IC50,4)),
                  xy=(pIC50+0.05, fitfunc(pIC50, *popt)), ha="left", va="bottom")
     #plt.legend()
     plt.ylim(ymin, ymax)
@@ -106,5 +107,5 @@ for in_in in files:
 
     save_this(in_in+".png")
     with open(in_in+"_output.tsv", "w") as w:
-        w.write("X\tY\tIC50:\t{}\n".format(10**pIC50))
+        w.write("X\tY\tIC50:\t{}\n".format(IC50))
         np.savetxt(w, np.c_[x, fitfunc(x, *popt)], delimiter="\t")
