@@ -27,7 +27,7 @@ def findNearest(array, value):
 
 def sigmoid(x, pEC50, k, base, amp):
     """https://en.wikipedia.org/wiki/EC50#Equation"""
-    return amp / (1 + 10**((x-pEC50)*k)) + base
+    return amp / (1 + 10**((x+pEC50)*k)) + base
 
 def refine_plot(ax=None):
     if ax is None: ax = plt.gca()
@@ -37,7 +37,7 @@ def refine_plot(ax=None):
     ax.yaxis.set_ticks_position('left')
 
 def save_this(filename):
-    plt.savefig(filename, transparent=True, bbox_inches='tight')
+    plt.savefig(filename, transparent=False, bbox_inches='tight')
 
 def objective_IC50(x, popt):
     pEC50, k, base, amp = popt
@@ -91,7 +91,7 @@ for in_in in files:
     EC50 = 10**(-pEC50)
     IC50 = 10**(-pIC50)
     print "EC50: ", EC50
-    print "IC50: ", 10**(-pIC50)
+    print "IC50: ", IC50
 
     plt.figure()
     plt.plot(xs, ys, 'x', label='raw')
