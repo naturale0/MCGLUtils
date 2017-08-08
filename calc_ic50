@@ -88,9 +88,9 @@ for in_in in files:
 
     x = np.linspace(min(xs), max(xs), 100)
     pIC50 = x[np.argmin(objective_IC50(x, popt))]
-    EC50 = 10**(pEC50)
+    EC50 = 10**(-pEC50)
     print "EC50: ", EC50
-    print "IC50: ", 10**pIC50
+    print "IC50: ", 10**(-pIC50)
 
     plt.figure()
     plt.plot(xs, ys, 'x', label='raw')
@@ -106,5 +106,5 @@ for in_in in files:
 
     save_this(in_in+".png")
     with open(in_in+"_output.tsv", "w") as w:
-        w.write("X\tY\tIC50:{}\n".format(10**pIC50))
+        w.write("X\tY\tIC50:\t{}\n".format(10**pIC50))
         np.savetxt(w, np.c_[x, fitfunc(x, *popt)], delimiter="\t")
