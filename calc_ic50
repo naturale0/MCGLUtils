@@ -61,9 +61,10 @@ for in_in in files:
             orig.append("zero")
         else:
             xss.append(np.log10(float(temp[0])))
-            orig.append(float(temp[0]))
+            orig.append(temp[0])
 
         if orig[0] == "zero":
+            print orig
             digit = len(str(orig[1]).split(".")[1])
             xss[0] = 0.1 ** (-digit-1)
         yss.append(float(temp[1]))
