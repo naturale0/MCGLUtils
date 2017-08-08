@@ -107,5 +107,5 @@ for in_in in files:
 
     save_this(in_in+".png")
     with open(in_in+"_output.tsv", "w") as w:
-        w.write("X\tY\tIC50:\t{}\t'-log10(IC50)\t{}\n".format(IC50, log_IC50))
+        w.write("X\tY\tIC50:\t{}\t'log10(IC50)\t{}\n".format(IC50, log_IC50))
         np.savetxt(w, np.c_[x, fitfunc(x, *popt)], delimiter="\t")
