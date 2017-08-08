@@ -25,9 +25,9 @@ input_dir = parser.parse_args().input_directory[0]
 def findNearest(array, value):
     return abs(np.asarray(array)-value).argmin()
 
-def sigmoid(x, pEC50, k, base, amp):
+def sigmoid(x, log_EC50, k, base, amp):
     """https://en.wikipedia.org/wiki/EC50#Equation"""
-    return amp / (1 + 10**((x+pEC50)*k)) + base
+    return amp / (1 + 10**((x-log_EC50)*k)) + base
 
 def refine_plot(ax=None):
     if ax is None: ax = plt.gca()
@@ -40,7 +40,7 @@ def save_this(filename):
     plt.savefig(filename, transparent=False, bbox_inches='tight')
 
 def objective_IC50(x, popt):
-    pEC50, k, base, amp = popt
+    log_EC50, k, base, amp = popt
     fitted = sigmoid(x, *popt)
     b = (ymin + ymax)/2.
     return np.append(fitted[fitted - b >= 0],
@@ -72,12 +72,12 @@ for in_in in files:
     ymax = max(ys)
     y50 = (ymax - ymin) / 2 #+ ymin
     idx = findNearest(ys, y50)
-    pEC50 = xs[idx]
+    log_EC50 = xs[idx]
     k = 1
     baseline = ymin
     amplitude = ymax - ymin
 
-    guess = [pEC50, k, baseline, amplitude]
+    guess = [log_EC50, k, baseline, amplitude]
     print "-" * 60
     print "filename: ", in_in
     print "starting parameters: ", guess
@@ -87,9 +87,9 @@ for in_in in files:
     print "fitted parameters: ", popt
 
     x = np.linspace(min(xs), max(xs), 100)
-    pIC50 = x[np.argmin(objective_IC50(x, popt))]
-    EC50 = 10**(-pEC50)
-    IC50 = 10**(-pIC50)
+    log_IC50 = x[np.argmin(objective_IC50(x, popt))]
+    EC50 = 10**log_EC50
+    IC50 = 10**log_IC50
     print "EC50: ", EC50
     print "IC50: ", IC50
 
@@ -97,15 +97,15 @@ for in_in in files:
     plt.plot(xs, ys, 'x', label='raw')
     #plt.plot(x, fitfunc(x, *guess), label='guess')
     plt.plot(x, fitfunc(x, *popt), color="b", label='fit')
-    plt.axvline(pIC50, color="gray", linestyle="--", label="pIC50")
-    plt.axhline(fitfunc(pIC50, *popt), color="gray", linestyle="--")
+    plt.axvline(log_IC50, color="gray", linestyle="--", label="log_IC50")
+    plt.axhline(fitfunc(log_IC50, *popt), color="gray", linestyle="--")
     plt.annotate("IC50 = {}".format(round(IC50,4)),
-                 xy=(pIC50+0.05, fitfunc(pIC50, *popt)), ha="left", va="bottom")
+                 xy=(log_IC50+0.05, fitfunc(log_IC50, *popt)), ha="left", va="bottom")
     #plt.legend()
     plt.ylim(ymin, ymax)
     refine_plot()
 
     save_this(in_in+".png")
     with open(in_in+"_output.tsv", "w") as w:
-        w.write("X\tY\tIC50:\t{}\t-log10(IC50)\t{}\n".format(IC50, pIC50))
+        w.write("X\tY\tIC50:\t{}\t'-log10(IC50)\t{}\n".format(IC50, log_IC50))
         np.savetxt(w, np.c_[x, fitfunc(x, *popt)], delimiter="\t")
