@@ -56,9 +56,13 @@ for in_in in files:
     while l:
         temp = l[:-1].split()
         if temp[0] == '0':
-            xss.append(-3)
+            xss.append("zero")
         else:
             xss.append(np.log10(float(temp[0])))
+
+        if xss[0] == "zero":
+            digit = len(str(xss[1]).split(".")[1])
+            xss[0] = 0.1 ** (-digit-1)
         yss.append(float(temp[1]))
         l = r.readline()
 
