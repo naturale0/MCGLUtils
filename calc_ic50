@@ -53,15 +53,18 @@ for in_in in files:
     l = r.readline()
     xss = []
     yss = []
+    orig = []
     while l:
         temp = l[:-1].split()
         if temp[0] == '0':
             xss.append("zero")
+            orig.append("zero")
         else:
             xss.append(np.log10(float(temp[0])))
+            orig.append(float(temp[0]))
 
-        if xss[0] == "zero":
-            digit = len(str(xss[1]).split(".")[1])
+        if orig[0] == "zero":
+            digit = len(str(orig[1]).split(".")[1])
             xss[0] = 0.1 ** (-digit-1)
         yss.append(float(temp[1]))
         l = r.readline()
