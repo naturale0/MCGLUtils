@@ -32,7 +32,7 @@ def run_weblogo(fasta, prob=False, colors=["#e1390e", "AT", "#aacccb", "GC", "#b
             else:
                 color_str += '{} "{}" '.format(i, i)
 
-    weblogo_str_option = 'weblogo --format png {}'.format(color_str)
+    weblogo_str_option = 'weblogo --alphabet ATGCN --format png {}'.format(color_str)
     if prob:
         weblogo_str_option += " --units probability"
     output = os.path.splitext(fasta)[0]
